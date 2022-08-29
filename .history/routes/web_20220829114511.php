@@ -19,4 +19,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::group(['prefix'  =>  '/api'], function()
+{
+    Route::get('/register',         [ApiController::class, 'store'])->name('/register');
+});
+
 Route::get('/test',         [TestController::class, 'index'])->name('/test');

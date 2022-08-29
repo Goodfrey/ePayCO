@@ -1,0 +1,199 @@
+{
+	"info": {
+		"_postman_id": "d1a88d2d-435b-4535-8243-0df38ebc333f",
+		"name": "ePayCO",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "http://epayco.test/api/confirmation",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "token",
+							"value": "4881559e717a",
+							"type": "default"
+						},
+						{
+							"key": "session",
+							"value": "d9205cd26023",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://epayco.test/api/confirmation",
+					"protocol": "http",
+					"host": [
+						"epayco",
+						"test"
+					],
+					"path": [
+						"api",
+						"confirmation"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://epayco.test/api/register",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "nombre",
+							"value": "Pablo Campos",
+							"type": "default"
+						},
+						{
+							"key": "email",
+							"value": "pcampos972@gmail.com",
+							"type": "default"
+						},
+						{
+							"key": "celular",
+							"value": "584269876543",
+							"type": "default"
+						},
+						{
+							"key": "documento",
+							"value": "4827583",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://epayco.test/api/register",
+					"protocol": "http",
+					"host": [
+						"epayco",
+						"test"
+					],
+					"path": [
+						"api",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://epayco.test/api/consult",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "celular",
+							"value": "584269876543",
+							"type": "default"
+						},
+						{
+							"key": "documento",
+							"value": "4827583",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://epayco.test/api/consult",
+					"protocol": "http",
+					"host": [
+						"epayco",
+						"test"
+					],
+					"path": [
+						"api",
+						"consult"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://epayco.test/api/recharge",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "celular",
+							"value": "584269876543",
+							"type": "default"
+						},
+						{
+							"key": "valor",
+							"value": "36.66",
+							"type": "default"
+						},
+						{
+							"key": "documento",
+							"value": "4827583",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://epayco.test/api/recharge",
+					"protocol": "http",
+					"host": [
+						"epayco",
+						"test"
+					],
+					"path": [
+						"api",
+						"recharge"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://epayco.test/api/payment",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "celular",
+							"value": "584269876543",
+							"type": "default"
+						},
+						{
+							"key": "documento",
+							"value": "4827583",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://epayco.test/api/payment",
+					"protocol": "http",
+					"host": [
+						"epayco",
+						"test"
+					],
+					"path": [
+						"api",
+						"payment"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

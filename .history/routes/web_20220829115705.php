@@ -19,4 +19,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+Route::group(['prefix'  =>  '/v1/api/'], function()
+{
+    // Route::get('/register',         [ApiController::class, 'register'])->name('/register');
+    Route::post('/register',        [ApiController::class, 'register']);
+});
+
 Route::get('/test',         [TestController::class, 'index'])->name('/test');

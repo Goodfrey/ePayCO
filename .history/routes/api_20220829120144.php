@@ -19,8 +19,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::put('/register',         [ApiController::class, 'register']);
-Route::post('/recharge',        [ApiController::class, 'recharge']);
-Route::post('/payment',         [ApiController::class, 'payment']);
-Route::post('/confirmation',    [ApiController::class, 'confirmation']);
-Route::post('/consult',         [ApiController::class, 'consult']);
+Route::get('/register', [ApiController::class, 'index']);

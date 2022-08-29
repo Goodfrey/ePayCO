@@ -1,0 +1,337 @@
+<?php
+
+namespace App\Http\Controllers;
+use Symfony\Component\HttpFoundation\Response;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+
+use App\Models\User;
+use App\Models\Invoices;
+
+class ApiController extends Controller
+{
+
+    public function register(Request $request)
+    {
+        if($request->getContent() != '')
+        {
+            $validation     =   User::validateAll($request->request->all());
+
+            if($validation)
+            {
+                
+                $user       =   User::ValidateUser($request->request->all());
+
+                if($user == false)
+                {
+
+                    $insert     =   User::createData($request->request->all());
+                    
+                    if($insert == true)
+                    {
+                        return \response()->json([
+                            'status'    =>  true,
+                            'message'   =>  'Usuario creado correctamente',
+                        ], Response::HTTP_OK);
+
+                    }else{
+
+                        return \response()->json([
+                            'status'    =>  false,
+                            'message'   =>  'Error al crear usuario',
+                        ], 400);
+                    }
+                
+                }else{
+                        return \response()->json([
+                            'status'    =>  false,
+                            'message'   =>  'Datos ya registrados en sistema.',
+                        ], 400);
+                }
+
+            
+            }else{
+
+                return \response()->json([
+                    'status'    =>  false,
+                    'message'   =>  'Debe enviar toda la informacion solicitada o datos correctos',
+                ], 400);
+            }
+
+        }else{
+
+            return \response()->json([
+                'status'    =>  false,
+                'message'   =>  'Debe enviar toda la informacion solicitada',
+            ], 400);
+        
+        }
+    
+    }
+
+    public function recharge(Request $request)
+    {
+
+        if($request->getContent() != '')
+        {
+            $validation     =   User::validateRecharge($request->request->all());
+
+            if($validation == true)
+            {
+                $valAmount  =   User::validateAmount($request->request->all());
+
+                if($valAmount == true)
+                {
+                    $user       =   User::ValidateUser($request->request->all());
+
+                    if($user != false)
+                    {
+                        $myWallet   =   $user[0]->getWallet($user[0]->profile);
+                        $myWallet->depositFloat($request->request->all()['valor']);
+
+                        $myWallet   =   $user[0]->getWallet($user[0]->profile);
+
+                        return \response()->json([
+                            'status'    =>  true,
+                            'message'   =>  'El Balance de Billetera es: '.$myWallet->balanceFloat,
+                        ], Response::HTTP_OK); 
+
+                    }else{
+                        return \response()->json([
+                            'status'    =>  false,
+                            'message'   =>  'Informacion de cliente no encontrado, intente nuevamente',
+                        ], 400);                    
+                    }
+                }else{
+                    return \response()->json([
+                        'status'    =>  false,
+                        'message'   =>  'El valor de la recarga debe ser mayor a 0, intente nuevamente',
+                    ], 400);  
+                }
+
+            }else{
+                return \response()->json([
+                    'status'    =>  false,
+                    'message'   =>  'Campos inexistente o contiene valores diferentes a numericos',
+                ], 400);
+            }
+
+        }else{
+
+            return \response()->json([
+                'status'    =>  false,
+                'message'   =>  'Debe enviar toda la informacion solicitada',
+            ], 400);
+        
+        }
+
+    }
+
+    public function payment(Request $request)
+    {
+
+        if($request->getContent() != '')
+        {
+            $validation     =   User::validateRecharge($request->request->all());
+
+            if($validation == true)
+            {
+                $user       =   User::ValidateUser($request->request->all());
+
+                if($user != false)
+                {
+                    $value      =   Invoices::GetValue();
+
+                    $myWallet   =   $user[0]->getWallet($user[0]->profile);
+                    $balance    =   $myWallet->balanceFloat;
+
+                    if($balance >= $value)
+                    {
+                        $token  =   bin2hex(random_bytes(6));
+                        $id     =   bin2hex(random_bytes(6));
+                        $iData  =   [
+                            'user'      =>  $user[0]->id,
+                            'amount'    =>  $value,
+                            'session'   =>  $id,
+                            'token'     =>  $token
+                        ];
+
+                        $invoices   =   Invoices::CreateInvo($iData);
+
+                        if($invoices == true)
+                        {
+                            $email  =   \Mail::to($user[0]->email)->send(new \App\Mail\SendInvoice(['token' => $token, 'id' => $id]));
+
+
+                            return \response()->json([
+                                'status'    =>  true,
+                                'message'   =>  'Se ha enviado un email con la informacion para su confirmacion de compra.'
+                            ], Response::HTTP_OK); 
+
+                        }else{
+                            return \response()->json([
+                                'status'    =>  false,
+                                'message'   =>  'Error el crear la compra, intente nuevamente'
+                            ], 400); 
+                        
+                        }
+
+                    }else{
+                        return \response()->json([
+                            'status'    =>  false,
+                            'message'   =>  'Fondo insuficiente, el balance de su Billetera es: '.$myWallet->balanceFloat.' factura: '.$value.''
+                        ], 400); 
+                    }
+
+                }else{
+                    return \response()->json([
+                        'status'    =>  false,
+                        'message'   =>  'Datos de usuario invalidos o no existen.',
+                    ], 400);                    
+                }
+
+            }else{
+                return \response()->json([
+                    'status'    =>  false,
+                    'message'   =>  'Campo inexistente o contiene valores diferentes a los requeridos',
+                ], 400);
+            
+            }
+
+        }else{
+
+            return \response()->json([
+                'status'    =>  false,
+                'message'   =>  'Debe enviar toda la informacion solicitada',
+            ], 400);
+        
+        }
+
+    }
+
+    public function confirmation(Request $request)
+    {
+
+        if($request->getContent() != '')
+        {
+            $validation     =   Invoices::ValidateInfo($request->request->all());
+
+            if($validation == true)
+            {
+                $invo   =   Invoices::GetInvo($request->request->all());
+
+
+                if( ($invo != false) && ($invo[0]->status_id == 1))
+                {
+                    $user       =   User::UserByID($invo[0]->user_id);
+
+
+                    $myWallet   =   $user[0]->getWallet($user[0]->profile);
+                    $balance    =   $myWallet->balanceFloat;
+
+                    if($balance >= $invo[0]->amount)
+                    {
+                        
+                        $upd    =   Invoices::UpdateInvo($invo[0]->code);
+
+                        if( ($upd == true) && ($invo[0]->status_id == 1) )
+                        {
+                            $myWallet   =   $user[0]->getWallet($user[0]->profile);
+                            $myWallet->WithdrawFloat($invo[0]->amount, ['Description' => 'PAYMENT INVOICE: '.$invo[0]->code.' - Amount: '.$invo[0]->code.' - Status: Success']);
+                            $balance    =   $myWallet->balanceFloat;
+
+                            return \response()->json([
+                                'status'    =>  true,
+                                'message'   =>  'Pago procesado con exito, el balance de su Billetera es: '.$balance.''
+                            ], Response::HTTP_OK); 
+
+                        }else{
+                            return \response()->json([
+                                'status'    =>  false,
+                                'message'   =>  'Error al procesar su compra, pago realizado con anterioridad'
+                            ], 400); 
+                        }
+
+                    }else{
+                        return \response()->json([
+                            'status'    =>  false,
+                            'message'   =>  'Fondo insuficiente, el balance de su Billetera es: '.$myWallet->balanceFloat
+                        ], 400); 
+                    }
+
+                }else{
+                    return \response()->json([
+                        'status'    =>  false,
+                        'message'   =>  'Informacion sobre la compra no encontrada o pago realizado con anterioridad.',
+                    ], 400);                    
+                }
+
+            }else{
+                return \response()->json([
+                    'status'    =>  false,
+                    'message'   =>  'Campos requeridos Invalidos, intente nuevamente',
+                ], 400);
+            }
+
+        }else{
+
+            return \response()->json([
+                'status'    =>  false,
+                'message'   =>  'Debe enviar toda la informacion solicitada',
+            ], 400);
+        
+        }
+
+    }
+
+    public function consult(Request $request)
+    {
+
+        if($request->getContent() != '')
+        {
+            $validation     =   User::validateRecharge($request->request->all());
+
+            if($validation == true)
+            {
+
+                $user       =   User::ValidateUser($request->request->all());
+
+                if( $user != false)
+                {
+                    $user       =   User::UserByID($user[0]->id);
+
+                    $myWallet   =   $user[0]->getWallet($user[0]->profile);
+                    $balance    =   $myWallet->balanceFloat;
+
+                    return \response()->json([
+                        'status'    =>  true,
+                        'message'   =>  'El balance de su Billetera es: '.$balance.''
+                    ], Response::HTTP_OK); 
+
+                }else{
+                    return \response()->json([
+                        'status'    =>  false,
+                        'message'   =>  'Datos de usuario invalidos o no existen.',
+                    ], 400);                    
+                }
+
+            }else{
+                return \response()->json([
+                    'status'    =>  false,
+                    'message'   =>  'Campos requeridos Invalidos, intente nuevamente',
+                ], 400);
+            }
+
+        }else{
+
+            return \response()->json([
+                'status'    =>  false,
+                'message'   =>  'Debe enviar toda la informacion solicitada',
+            ], 400);
+        
+        }
+
+    }
+}

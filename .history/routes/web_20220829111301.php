@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\ApiController;
 use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,4 +18,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/test',         [TestController::class, 'index'])->name('/test');
+Route::group(['prefix'  =>  '/api'], function()
+{
+    Route::post('/register',         [ApiController::class, 'register'])->name('/register');
+});
+
+Route::post('/test',         [TestController::class, 'index'])->name('/test');
